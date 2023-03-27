@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "paramnet"
+version = "0.1.0"
+description = ""
+authors = ["Rahul Menon <rmeno12@utexas.edu>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.8.1,<4.0"
+torch = "^2.0.0"
+numpy = "^1.24.2"
+matplotlib = "^3.7.1"
+
+[tool.poetry.group.dev.dependencies]
+mypy = "^1.1.1"
+flake8 = "^6.0.0"
+black = "^23.1.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
