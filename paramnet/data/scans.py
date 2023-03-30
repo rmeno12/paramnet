@@ -6,7 +6,7 @@ from rosbag import Bag
 from torch.utils.data import Dataset
 
 
-class RosbagScanDataset(Dataset):
+class RosbagScanDataset(Dataset[Tuple[torch.Tensor, torch.Tensor]]):
     def __init__(
         self,
         bag_files: List[Path],
