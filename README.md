@@ -1,7 +1,7 @@
 # paramnet
 
 This project is built using poetry, but it doesn't have to be run with it as long as you set up your own virtual environment.
-If not using poetry, create a virtual environment and install this directory as an editable package (`pip install -e .`) inside the virtual environment.
+If not using poetry, create a virtual environment and install this directory as a package (`pip install .`) inside the virtual environment.
 
 To train a simple classifier with 1 dimensional convolutions, run the `paramnet.run.train_conv` module.
 ```
