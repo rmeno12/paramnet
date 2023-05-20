@@ -36,13 +36,15 @@ class RosbagScanDataset(Dataset[Tuple[torch.Tensor, torch.Tensor]]):
         rows: List[torch.Tensor] = []
         for topic, msg, _ in msgs:
             if topic == self.scan_topic:
-                last_scan = msg.ranges
+                last_scan = [r / msg.range_max for r in msg.ranges]
                 if last_class is not None:
                     rows.append(
                         torch.tensor([[last_class, *last_scan]], dtype=torch.float32)
                     )
             elif topic == self.joystick_topic:
-                last_class = msg.buttons[0] == 1
+                last_class = (
+                    1 if msg.buttons[1] == 1 else 2 if msg.buttons[2] == 1 else 0
+                )
 
         return torch.cat(rows)
 
