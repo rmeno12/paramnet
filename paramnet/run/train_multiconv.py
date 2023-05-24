@@ -32,39 +32,48 @@ def main() -> None:
     train_dataset = Subset(dataset, train_indices)
     val_dataset = Subset(dataset, val_indices)
 
-    # stratified random sampling for training data
-    train_class_counts = [
-        sum(train_dataset.dataset.y[train_indices] == float(i))
-        for i in range(args.num_classes)
-    ]
-    train_class_weights = 1.0 / torch.tensor(train_class_counts, dtype=torch.float)
-    train_weights = train_class_weights[train_dataset.dataset.y[train_indices].int()]
-    train_sampler = WeightedRandomSampler(train_weights, len(train_weights))
+    # # stratified random sampling for training data
+    # train_class_counts = [
+    #     sum(train_dataset.dataset.y[train_indices] == float(i))
+    #     for i in range(args.num_classes)
+    # ]
+    # train_class_weights = 1.0 / torch.tensor(train_class_counts, dtype=torch.float)
+    # train_weights = train_class_weights[train_dataset.dataset.y[train_indices].int()]
+    # train_sampler = WeightedRandomSampler(train_weights, len(train_weights))
 
-    # stratified random sampling for validation data
-    val_class_counts = [
-        sum(val_dataset.dataset.y[val_indices] == float(i))
-        for i in range(args.num_classes)
-    ]
-    val_class_weights = 1.0 / torch.tensor(val_class_counts, dtype=torch.float)
-    val_weights = val_class_weights[val_dataset.dataset.y[val_indices].int()]
-    val_sampler = WeightedRandomSampler(val_weights, len(val_weights))
+    # weights for weighted cross entropy
+    train_class_counts = torch.tensor(
+        [
+            sum(train_dataset.dataset.y[train_indices] == float(i))
+            for i in range(args.num_classes)
+        ]
+    )
+    train_class_loss_weights = len(train_dataset) / train_class_counts
 
-    train_loader = DataLoader(train_dataset, batch_size=64, sampler=train_sampler)
-    val_loader = DataLoader(val_dataset, batch_size=64, sampler=val_sampler)
+    # # stratified random sampling for validation data
+    # val_class_counts = [
+    #     sum(val_dataset.dataset.y[val_indices] == float(i))
+    #     for i in range(args.num_classes)
+    # ]
+    # val_class_weights = 1.0 / torch.tensor(val_class_counts, dtype=torch.float)
+    # val_weights = val_class_weights[val_dataset.dataset.y[val_indices].int()]
+    # val_sampler = WeightedRandomSampler(val_weights, len(val_weights))
+
+    train_loader = DataLoader(train_dataset, batch_size=64)  # , sampler=train_sampler)
+    val_loader = DataLoader(val_dataset, batch_size=64)  # , sampler=val_sampler)
     logger.info(
         f"Train size: {len(train_dataset)}, Validation size: {len(val_dataset)}"
     )
     logger.info("Done loading data.")
 
-    device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     logger.info(f"Using device {device}")
 
     learning_rate = 0.01
     epochs = 500
     model = Conv1dMultiClassifier(args.num_classes).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
-    loss_fn = torch.nn.CrossEntropyLoss()
+    loss_fn = torch.nn.CrossEntropyLoss(weight=train_class_loss_weights.to(device))
 
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
         optimizer, factor=0.5, patience=5, verbose=True

@@ -45,12 +45,10 @@ class Conv1dMultiClassifier(Module):
             ReLU(),
             Linear(64, n_classes),
         )
-        self.softmax = torch.nn.Softmax(dim=1)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = x.reshape(x.shape[0], 1, -1)
         x = self.conv(x)
         x = torch.flatten(x, 1)
         x = self.fc(x)
-        x = self.softmax(x)
         return x
